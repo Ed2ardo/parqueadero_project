@@ -1,0 +1,25 @@
+# Entornos virtuales de Python
+venv/
+.env/
+*.pyc
+__pycache__/
+
+# Configuración local y archivos de entorno
+*.env
+.env.*
+config.json
+
+# Archivos de bases de datos de desarrollo (si usas SQLite, por ejemplo)
+*.sqlite3
+
+# Archivos de Django
+/media/
+staticfiles/
+
+# Editor y sistema operativo
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Archivos de migración (en caso de ser necesario ignorarlos en algún punto)
+migrations/
