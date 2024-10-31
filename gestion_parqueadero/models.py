@@ -4,28 +4,6 @@ from usuarios.models import Usuario
 # gestion_parqueadero models
 
 
-class Vehiculo(models.Model):
-    tipo_vehiculo_choices = [
-        ('carro', 'Carro'),
-        ('moto', 'Moto'),
-        ('camioneta', 'Camioneta'),
-        ('bici', 'Bicicleta'),
-        ('otro', 'Otro'),
-    ]
-
-    placa = models.CharField(max_length=10, unique=True)
-    tipo = models.CharField(max_length=10, choices=tipo_vehiculo_choices)
-    hora_entrada = models.DateTimeField(auto_now_add=True)
-    hora_salida = models.DateTimeField(null=True, blank=True)
-    cliente_id = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, null=True, blank=True)
-    espacio_id = models.ForeignKey(
-        'EspacioParqueo', on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.tipo} - {self.placa}"
-
-
 class EspacioParqueo(models.Model):
     estado_choices = [
         ('disponible', 'Disponible'),
@@ -51,8 +29,30 @@ class EspacioParqueo(models.Model):
         return f"Espacio {self.numero_espacio} - {self.estado}"
 
 
+class Vehiculo(models.Model):
+    tipo_vehiculo_choices = [
+        ('carro', 'Carro'),
+        ('moto', 'Moto'),
+        ('camioneta', 'Camioneta'),
+        ('bici', 'Bicicleta'),
+        ('otro', 'Otro'),
+    ]
+
+    placa = models.CharField(max_length=10, unique=True)
+    tipo = models.CharField(max_length=10, choices=tipo_vehiculo_choices)
+    hora_entrada = models.DateTimeField(auto_now_add=True)
+    hora_salida = models.DateTimeField(null=True, blank=True)
+    cliente_id = models.ForeignKey(
+        Usuario, on_delete=models.CASCADE, null=True, blank=True)
+    espacio = models.ForeignKey(
+        EspacioParqueo, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.tipo} - {self.placa}"
+
+
 class RegistroParqueo(models.Model):
-    Vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
     fecha_entrada = models.DateTimeField()
     fecha_salida = models.DateTimeField(null=True, blank=True)
     total_cobro = models.DecimalField(
