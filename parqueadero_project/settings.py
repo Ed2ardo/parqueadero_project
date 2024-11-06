@@ -41,6 +41,9 @@ INSTALLED_APPS = [
 
     'usuarios',
     'gestion_parqueadero',
+    'clientes',
+    'facturas',
+    'tarifas',
 ]
 
 MIDDLEWARE = [

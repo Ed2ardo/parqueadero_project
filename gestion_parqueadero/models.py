@@ -1,5 +1,6 @@
 from django.db import models
 from usuarios.models import Usuario
+from clientes.models import Cliente
 
 # gestion_parqueadero models
 
@@ -42,8 +43,8 @@ class Vehiculo(models.Model):
     tipo = models.CharField(max_length=10, choices=tipo_vehiculo_choices)
     hora_entrada = models.DateTimeField(auto_now_add=True)
     hora_salida = models.DateTimeField(null=True, blank=True)
-    cliente_id = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, null=True, blank=True)
+    cliente = models.ForeignKey(
+        Cliente, on_delete=models.CASCADE, null=True, blank=True)
     espacio = models.ForeignKey(
         EspacioParqueo, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -59,4 +60,4 @@ class RegistroParqueo(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
-        return f"Registro {self.Vehiculo.placa} - Entrada: {self.fecha_entrada} - Salida: {self.fecha_salida}"
+        return f"Registro {self.vehiculo.placa} - Entrada: {self.fecha_entrada} - Salida: {self.fecha_salida}"
