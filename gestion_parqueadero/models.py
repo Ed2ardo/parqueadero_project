@@ -54,7 +54,7 @@ class Vehiculo(models.Model):
 
 class RegistroParqueo(models.Model):
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
-    fecha_entrada = models.DateTimeField()
+    fecha_entrada = models.DateTimeField(auto_now_add=True)
     fecha_salida = models.DateTimeField(null=True, blank=True)
     total_cobro = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True)

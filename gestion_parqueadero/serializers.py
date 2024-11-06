@@ -22,4 +22,4 @@ class RegistroParqueoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegistroParqueo
-        fields = '__all__'
+        fields = ['vehiculo', 'fecha_entrada', 'fecha_salida', 'total_cobro']
