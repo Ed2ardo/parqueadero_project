@@ -15,9 +15,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'password': {'write_only': True}
         }
 
-        def create(self, validated_data):
-            # cifrar contraseña antes de guardar
-            validated_data['password'] = make_password(
-                validated_data['password'])
+    def create(self, validated_data):
+        # cifrar contraseña antes de guardar
+        validated_data['password'] = make_password(
+            validated_data['password'])
 
-            return super(UsuarioSerializer, self).create(validated_data)
+        return super(UsuarioSerializer, self).create(validated_data)

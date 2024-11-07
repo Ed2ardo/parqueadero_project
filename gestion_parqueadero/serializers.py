@@ -18,7 +18,9 @@ class VehiculoSerializer(serializers.ModelSerializer):
 
 
 class RegistroParqueoSerializer(serializers.ModelSerializer):
-    vehiculo = VehiculoSerializer(read_only=True)
+    # vehiculo = VehiculoSerializer(read_only=True)
+    vehiculo = serializers.PrimaryKeyRelatedField(
+        queryset=Vehiculo.objects.all())
 
     class Meta:
         model = RegistroParqueo

@@ -24,3 +24,7 @@ class RegistroParqueoViewSet(viewsets.ModelViewSet):
     queryset = RegistroParqueo.objects.all()
     serializer_class = RegistroParqueoSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtrar solo los registros del usuario autenticado, si aplica
+        return RegistroParqueo.objects.filter(usuario=self.request.user)

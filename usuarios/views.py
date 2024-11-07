@@ -1,26 +1,26 @@
-from rest_framework import generics, permissions
-# from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, permissions
 from .models import Usuario
 from .serializers import UsuarioSerializer
-
-# views users
-
-# List and create users
+from django.contrib.auth.hashers import make_password
 
 
-class UsuarioListCreateView(generics.ListCreateAPIView):
-    queryset = Usuario.objects.all()  # datos disponibles: todos los objetos de Usuario
-    serializer_class = UsuarioSerializer
-    # Restringe el acceso a usuarios autenticados.
-    permission_classes = [permissions.IsAuthenticated]
-
-    # def perform_create(self, serializer):
-    #     serializer.save()
-
-# obtener, update y eliminar usuarios especificos
-
-
-class UsuarioGestionView(generics.RetrieveUpdateDestroyAPIView):
+class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Cifra la contraseña al crear un usuario
+        if 'password' in serializer.validated_data:
+            serializer.save(password=make_password(
+                serializer.validated_data['password']))
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        # Cifra la contraseña si se está actualizando
+        if 'password' in serializer.validated_data:
+            serializer.save(password=make_password(
+                serializer.validated_data['password']))
+        else:
+            serializer.save()

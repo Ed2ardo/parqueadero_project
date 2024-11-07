@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
-# User's models
-
-
 class Usuario(AbstractUser):
     role = models.CharField(max_length=50, choices=[(
         'admin', 'Administrador'), ('operario', 'Operario')])

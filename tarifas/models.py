@@ -1,8 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
-
 class Tarifa(models.Model):
     tipo_vehiculo_choices = [
         ('carro', 'Carro'),

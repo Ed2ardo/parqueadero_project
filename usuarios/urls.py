@@ -1,16 +1,12 @@
-from django.urls import path
-# from rest_framework.routers import DefaultRouter
-from .views import UsuarioGestionView, UsuarioListCreateView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import UsuarioViewSet
 
-# router = DefaultRouter()  # Genera las rutas para la vista de UsuarioViewSet
-# # registrar la ruta en "usuarios/"
-# router.register(r'usuarios', UsuarioViewSet)
+# Crear el router y registrar el ViewSet
+router = DefaultRouter()
+router.register(r'', UsuarioViewSet, basename='usuario')
 
-
-# Definir las rutas de la API, incluida las de router
+# Incluir las rutas generadas por el router
 urlpatterns = [
-    path('', UsuarioListCreateView.as_view(),
-         name='user-list-create'),  # GET & POST
-    path('<int:pk>/', UsuarioGestionView.as_view(),
-         name='user-detail'),  # GET, PUT & DELETE
+    path('', include(router.urls)),
 ]

@@ -42,7 +42,7 @@ class Vehiculo(models.Model):
     placa = models.CharField(max_length=10, unique=True)
     tipo = models.CharField(max_length=10, choices=tipo_vehiculo_choices)
     hora_entrada = models.DateTimeField(auto_now_add=True)
-    hora_salida = models.DateTimeField(null=True, blank=True)
+    # hora_salida = models.DateTimeField(null=True, blank=True)
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, null=True, blank=True)
     espacio = models.ForeignKey(
