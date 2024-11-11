@@ -4,6 +4,7 @@ import Clientes from './pages/Clientes';
 import Facturas from './pages/Facturas';
 import Parqueo from './pages/Parqueo';
 import Navbar from "./components/Navbar";
+import './css/styles.css'
 
 function App() {
 
