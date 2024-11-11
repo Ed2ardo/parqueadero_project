@@ -1,7 +1,7 @@
 function Facturas() {
     return (
         <>
-            <h1>hola facturas</h1>
+            <h1>Espacio para las facturas</h1>
         </>
     )
 }

@@ -3,12 +3,15 @@ import Login from './pages/Login';
 import Clientes from './pages/Clientes';
 import Facturas from './pages/Facturas';
 import Parqueo from './pages/Parqueo';
+import Navbar from "./components/Navbar";
 
 function App() {
 
   return (
     <Router>
+      <Navbar />
       <Routes>
+        <Route path="/" element={<Clientes />} />
         <Route path="/login" element={<Login />} />
         <Route path="/clientes" element={<Clientes />} />
         <Route path="/facturas" element={<Facturas />} />
@@ -18,4 +21,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
