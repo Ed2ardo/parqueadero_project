@@ -96,3 +96,25 @@ button:disabled {
 p {
   color: red;
 }
+
+/* Estilos para Vehículos */
+.vehiculos {
+  margin-top: 20px;
+}
+.vehiculos h2 {
+  color: #4CAF50;
+}
+.vehiculos input {
+  margin: 5px;
+}
+
+/* Estilos para Espacios de Parqueo */
+.parqueo {
+  margin-top: 20px;
+}
+.parqueo h2 {
+  color: #FF9800;
+}
+.parqueo ul {
+  list-style: none;
+}
