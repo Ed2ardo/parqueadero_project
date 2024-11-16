@@ -22,6 +22,7 @@ api.interceptors.request.use((config) => {
 
 export const login = (credentials) => api.post("/auth/login/", credentials);
 export const getClientes = () => api.get("/clientes/");
+export const getVehiculos = () => api.get("/gestion_parqueadero/vehiculos/");
 // añadir las funciones para facturas, parqueo, etc.
 
 export default api;
