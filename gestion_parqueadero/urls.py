@@ -1,14 +1,12 @@
 from rest_framework.routers import DefaultRouter
+from .views import EspacioParqueoConfigViewSet, VehiculoViewSet, RegistroParqueoViewSet
 from django.urls import path, include
-from .views import VehiculoViewSet, EspacioParqueoViewSet, RegistroParqueoViewSet
 
-
-# Crear router y registrar los ViewSets
 router = DefaultRouter()
-router.register(r'vehiculos', VehiculoViewSet, basename='vehiculo')
-router.register(r'espacios', EspacioParqueoViewSet, basename='espacioparqueo')
-router.register(r'registros', RegistroParqueoViewSet,
-                basename='registroparqueo')
+router.register(r'espacios', EspacioParqueoConfigViewSet, basename='espacios')
+router.register(r'vehiculos', VehiculoViewSet, basename='vehiculos')
+router.register(r'registros', RegistroParqueoViewSet, basename='registros')
+
 
 # Incluir rutas al router
 urlpatterns = [

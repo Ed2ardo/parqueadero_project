@@ -6,4 +6,4 @@ from .serializers import TarifaSerializer
 class TarifaViewSet(viewsets.ModelViewSet):
     queryset = Tarifa.objects.all()
     serializer_class = TarifaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]

@@ -49,5 +49,11 @@ class Factura(models.Model):
         # Llamar al método save original para guardar la factura
         super().save(*args, **kwargs)
 
+    def clean(self):
+        if self.tiempo_total and self.tiempo_total.total_seconds() < 0:
+            raise ValidationError("El tiempo total no puede ser negativo.")
+        if self.monto is not None and self.monto <= 0:
+            raise ValidationError("El monto debe ser mayor que cero.")
+
     def __str__(self):
         return f"Factura de {self.cliente} para el registro {self.registro_parqueo}"

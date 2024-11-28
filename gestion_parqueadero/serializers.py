@@ -1,27 +1,23 @@
 from rest_framework import serializers
-from .models import Vehiculo, EspacioParqueo, RegistroParqueo
+from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo
 
 
-class EspacioParqueoSerializer(serializers.ModelSerializer):
+class EspacioParqueoConfigSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EspacioParqueo
-        fields = '__all__'
+        model = EspacioParqueoConfig
+        fields = ['id', 'tipo_espacio', 'total_espacios']
 
 
 class VehiculoSerializer(serializers.ModelSerializer):
-    # Anidado como solo lectura para poder consultar la relación.
-    espacio = EspacioParqueoSerializer(read_only=True)
-
     class Meta:
         model = Vehiculo
-        fields = '__all__'
+        fields = ['id', 'placa', 'tipo', 'hora_entrada', 'cliente']
 
 
 class RegistroParqueoSerializer(serializers.ModelSerializer):
-    # vehiculo = VehiculoSerializer(read_only=True)
-    vehiculo = serializers.PrimaryKeyRelatedField(
-        queryset=Vehiculo.objects.all())
+    vehiculo = VehiculoSerializer(read_only=True)
 
     class Meta:
         model = RegistroParqueo
-        fields = ['vehiculo', 'fecha_entrada', 'fecha_salida', 'total_cobro']
+        fields = ['id', 'vehiculo', 'fecha_entrada',
+                  'fecha_salida', 'total_cobro']

@@ -2,34 +2,20 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 
 function Parqueo() {
-  const [espacios, setEspacios] = useState([]);
+  const [disponibilidad, setDisponibilidad] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchEspacios();
+    fetchDisponibilidad();
   }, []);
 
-  const fetchEspacios = async () => {
+  const fetchDisponibilidad = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/espacios/');
-      setEspacios(response.data);
+      const response = await axios.get('http://localhost:8000/api/gestion_parqueadero/espacios/');
+      setDisponibilidad(response.data);
     } catch (error) {
-      console.error("Error al obtener espacios de parqueo:", error);
-      setError("Error al obtener espacios de parqueo");
-    }
-  };
-
-  const toggleEstado = async (id, ocupado) => {
-    try {
-      const response = await axios.patch(`http://localhost:8000/api/espacios/${id}/`, {
-        ocupado: !ocupado
-      });
-      setEspacios(espacios.map(espacio =>
-        espacio.id === id ? { ...espacio, ocupado: response.data.ocupado } : espacio
-      ));
-    } catch (error) {
-      console.error("Error al cambiar estado:", error);
-      setError("Error al cambiar estado del espacio");
+      console.error("Error al obtener disponibilidad:", error);
+      setError("Error al obtener disponibilidad de espacios.");
     }
   };
 
@@ -37,16 +23,26 @@ function Parqueo() {
     <div className="parqueo">
       <h2>Espacios de Parqueo</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <ul>
-        {espacios.map(espacio => (
-          <li key={espacio.id}>
-            Espacio {espacio.numero} - {espacio.ocupado ? "Ocupado" : "Libre"}
-            <button onClick={() => toggleEstado(espacio.id, espacio.ocupado)}>
-              Cambiar estado
-            </button>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de Vehículo</th>
+            <th>Total Espacios</th>
+            <th>Ocupados</th>
+            <th>Disponibles</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(disponibilidad).map(([tipo, datos]) => (
+            <tr key={tipo}>
+              <td>{tipo.charAt(0).toUpperCase() + tipo.slice(1)}</td>
+              <td>{datos.total}</td>
+              <td>{datos.ocupados}</td>
+              <td>{datos.disponibles}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

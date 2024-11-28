@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.core.exceptions import ValidationError
+
 
 class Usuario(AbstractUser):
     role = models.CharField(max_length=50, choices=[(
@@ -18,6 +20,10 @@ class Usuario(AbstractUser):
         related_name="usuarios_usuario_permissions",
         blank=True
     )
+
+    def clean(self):
+        if self.role not in ['admin', 'operario']:
+            raise ValidationError("El rol debe ser 'admin' o 'operario'.")
 
     def __str__(self):
         return self.username
