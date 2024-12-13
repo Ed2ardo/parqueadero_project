@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo
+from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo, Tarifa
 
 
 class EspacioParqueoConfigSerializer(serializers.ModelSerializer):
@@ -38,3 +38,9 @@ class RegistroParqueoSerializer(serializers.ModelSerializer):
                       obj.fecha_entrada).total_seconds() / 60  # En minutos
             return round(tiempo, 2)
         return None
+
+
+class TarifaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tarifa
+        fields = "__all__"

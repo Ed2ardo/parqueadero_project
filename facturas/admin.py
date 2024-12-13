@@ -14,5 +14,6 @@ class FacturaAdmin(admin.ModelAdmin):
 
         # Guardar el objeto después del cálculo
         super().save_model(request, obj, form, change)
-    list_display = ('registro', 'identificacion_cliente', 'cliente', 'total')
+    list_display = ('registro_parqueo',
+                    'fecha_emision', 'numero_factura', 'total_cobro')
     # readonly_fields = ('monto', 'tiempo_total', 'fecha_emision', 'tarifa',)

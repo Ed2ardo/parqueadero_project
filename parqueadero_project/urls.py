@@ -23,5 +23,4 @@ urlpatterns = [
     path('api/gestion_parqueadero/', include('gestion_parqueadero.urls')),
     path('api/clientes/', include('clientes.urls')),
     path('api/facturas/', include('facturas.urls')),
-    path('api/tarifas/', include('tarifas.urls')),
 ]

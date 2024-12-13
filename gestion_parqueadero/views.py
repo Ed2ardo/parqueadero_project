@@ -3,7 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo, Tarifa
-from .serializers import EspacioParqueoConfigSerializer, VehiculoSerializer, RegistroParqueoSerializer
+from .serializers import EspacioParqueoConfigSerializer, VehiculoSerializer, RegistroParqueoSerializer, TarifaSerializer
 from rest_framework.permissions import AllowAny
 import logging
 
@@ -14,6 +14,12 @@ handler = logging.FileHandler("auditoria_parqueadero.log")
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 auditor_logger.addHandler(handler)
+
+
+class TarifaViewSet(viewsets.ModelViewSet):
+    queryset = Tarifa.objects.all()
+    serializer_class = TarifaSerializer
+    permission_classes = [AllowAny]
 
 
 # ViewSet para la configuración de espacios
