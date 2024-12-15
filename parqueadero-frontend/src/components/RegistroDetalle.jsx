@@ -17,12 +17,7 @@ function RegistroDetalle({ registro }) {
   };
 
   const formatearCobro = (cobro) => {
-    return cobro !== null ? `$${cobro.toFixed(2)}` : "Pendiente";
-  };
-
-  const handleSalidaRegistrada = () => {
-    alert("Salida registrada exitosamente.");
-    navigate("/registro-parqueo"); // Redirige a la página principal de registros
+    return cobro !== null ? `$${Number(cobro).toFixed(2)}` : "Pendiente";
   };
 
   return (

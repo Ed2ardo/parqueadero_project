@@ -16,6 +16,11 @@ function Navbar() {
               Registros de Parqueo
             </Link>
           </li>
+          <li>
+            <Link to="/historico" className="hover:text-gray-100">
+              Historico de Parqueo
+            </Link>
+          </li>
           {/* Agrega más enlaces aquí si es necesario */}
         </ul>
       </div>
