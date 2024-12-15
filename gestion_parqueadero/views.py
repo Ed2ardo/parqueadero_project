@@ -6,6 +6,7 @@ from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo, Tarifa
 from .serializers import EspacioParqueoConfigSerializer, VehiculoSerializer, RegistroParqueoSerializer, TarifaSerializer
 from rest_framework.permissions import AllowAny
 import logging
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 # Configurar el logger para auditoría
 auditor_logger = logging.getLogger("auditor")
@@ -67,75 +68,75 @@ class RegistroParqueoViewSet(viewsets.ModelViewSet):
     def registrar_salida(self, request, pk=None):
         try:
             registro = self.get_object()
-            if registro.fecha_salida is not None:
-                return Response({"error": "La salida ya ha sido registrada."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Calcular fecha de salida automáticamente
+            # Validar si ya se registró la salida
+            if registro.fecha_salida is not None:
+                return Response(
+                    {"error": "La salida ya ha sido registrada."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Registrar fecha de salida
             registro.fecha_salida = datetime.now(timezone.utc)
 
-            # Calcular tiempo estacionado en minutos
-            tiempo_estacionado = (registro.fecha_salida -
-                                  registro.fecha_entrada).total_seconds() / 60
-            registro.tiempo_estacionado = round(tiempo_estacionado, 2)
+            # Calcular tiempo estacionado en minutos (convertido a Decimal)
+            tiempo_estacionado = (
+                Decimal((registro.fecha_salida -
+                        registro.fecha_entrada).total_seconds())
+                / Decimal(60)
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+            registro.tiempo_estacionado = tiempo_estacionado
 
             # Obtener tarifa del tipo de vehículo
             tarifa = Tarifa.objects.filter(
                 tipo_vehiculo=registro.vehiculo.tipo).first()
             if not tarifa:
-                return Response({"error": "No se encontró una tarifa para este tipo de vehículo."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "No se encontró una tarifa para este tipo de vehículo."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Calcular total a cobrar
-            registro.total_cobro = round(
-                tiempo_estacionado * tarifa.costo_por_minuto, 2)
+            try:
+                costo_por_minuto = Decimal(tarifa.costo_por_minuto)
+                total_cobro = (tiempo_estacionado * costo_por_minuto).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+                registro.total_cobro = total_cobro
+            except InvalidOperation as e:
+                return Response(
+                    {"error": "Error al calcular el total a cobrar. Verifique los datos de la tarifa."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
             # Actualizar espacios ocupados
             espacio_config = EspacioParqueoConfig.objects.filter(
-                tipo_espacio=registro.vehiculo.tipo).first()
+                tipo_espacio=registro.vehiculo.tipo
+            ).first()
             if espacio_config:
                 espacio_config.espacios_ocupados = max(
-                    espacio_config.espacios_ocupados - 1, 0)
+                    espacio_config.espacios_ocupados - 1, 0
+                )
                 espacio_config.save()
 
+            # Guardar cambios en el registro
+            registro.estado = "facturado"
             registro.save()
 
             # Registrar auditoría
-            auditor_logger.info(f"Salida registrada para el vehículo {registro.vehiculo.placa}. Tiempo: {
-                                registro.tiempo_estacionado} minutos. Total cobrado: {registro.total_cobro}.")
+            auditor_logger.info(
+                f"Salida registrada para el vehículo {
+                    registro.vehiculo.placa}. "
+                f"Tiempo: {registro.tiempo_estacionado} minutos. Total cobrado: {
+                    registro.total_cobro}."
+            )
 
-            return Response({
-                "mensaje": "Salida registrada exitosamente.",
-                "tiempo_estacionado": registro.tiempo_estacionado,
-                "total_cobro": registro.total_cobro
-            })
+            # Serializar y devolver el registro actualizado
+            serializer = self.get_serializer(registro)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         except Exception as e:
             auditor_logger.error(
                 f"Error al registrar salida para el registro {pk}: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @action(detail=True, methods=['post'])
-    def dar_baja(self, request, pk=None):
-        try:
-            registro = self.get_object()
-            if registro.estado != 'activo':
-                return Response({"error": "El vehículo no está activo."}, status=status.HTTP_400_BAD_REQUEST)
-
-            registro.estado = 'baja'
-            registro.save()
-
-            # Liberar espacio ocupado
-            espacio_config = EspacioParqueoConfig.objects.filter(
-                tipo_espacio=registro.vehiculo.tipo).first()
-            if espacio_config:
-                espacio_config.espacios_ocupados = max(
-                    espacio_config.espacios_ocupados - 1, 0)
-                espacio_config.save()
-
-            # Registrar auditoría
-            auditor_logger.info(f"Registro dado de baja para el vehículo {
-                                registro.vehiculo.placa}. Estado actualizado a 'baja'.")
-
-            return Response({"mensaje": "Registro dado de baja exitosamente."}, status=status.HTTP_200_OK)
-        except RegistroParqueo.DoesNotExist:
-            auditor_logger.error(f"Error al dar de baja el registro {
-                                 pk}: No encontrado.")
-            return Response({"error": "Registro no encontrado."}, status=status.HTTP_404_NOT_FOUND)

@@ -3,6 +3,7 @@ from usuarios.models import Usuario
 from clientes.models import Cliente
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, MinValueValidator
+from decimal import Decimal
 
 
 # Configuración de espacios por tipo de vehículo
@@ -121,12 +122,8 @@ class RegistroParqueo(models.Model):
         verbose_name="Tiempo Estacionado (en minutos)"
     )
     total_cobro = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        verbose_name="Total Cobrado"
-    )
+        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Total Cobrado")
+
     estado = models.CharField(
         max_length=20,
         choices=ESTADO_CHOICES,
@@ -141,7 +138,8 @@ class RegistroParqueo(models.Model):
     def save(self, *args, **kwargs):
         if self.fecha_salida and self.fecha_entrada:
             delta = self.fecha_salida - self.fecha_entrada
-            self.tiempo_estacionado = delta.total_seconds() / 60  # Minutos
+            self.tiempo_estacionado = Decimal(
+                delta.total_seconds()) / 60  # Minutos
             tarifa = Tarifa.objects.filter(
                 tipo_vehiculo=self.vehiculo.tipo).first()
             if tarifa:
@@ -172,6 +170,12 @@ class Tarifa(models.Model):
         validators=[MinValueValidator(0.01)],
         verbose_name="Costo por minuto"
     )
+
+    def clean(self):
+        if self.costo_por_minuto <= 0:
+            raise ValidationError(
+                "El costo por minuto debe ser mayor a 0."
+            )
 
     def __str__(self):
         return f"{self.get_tipo_vehiculo_display()} - ${self.costo_por_minuto} por minuto."

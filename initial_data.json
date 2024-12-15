@@ -1,0 +1,27 @@
+[
+    {
+        "model": "gestion_parqueadero.tarifa",
+        "pk": 1,
+        "fields": {
+            "tipo_vehiculo": "Carro",
+            "costo_por_minuto": "90.5"
+        }
+    },
+    {
+        "model": "gestion_parqueadero.espacioparqueoconfig",
+        "pk": 1,
+        "fields": {
+            "tipo_espacio": "Carro",
+            "total_espacios": 50,
+            "espacios_ocupados": 0
+        }
+    },
+    {
+        "model": "gestion_parqueadero.vehiculo",
+        "pk": 1,
+        "fields": {
+            "placa": "XYZ123",
+            "tipo": "Carro"
+        }
+    }
+]
