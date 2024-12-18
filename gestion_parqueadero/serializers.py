@@ -3,8 +3,8 @@ from .models import EspacioParqueoConfig, Vehiculo, RegistroParqueo, Tarifa
 
 
 class EspacioParqueoConfigSerializer(serializers.ModelSerializer):
-    espacios_ocupados = serializers.IntegerField(
-        source='espacios_ocupados', read_only=True)
+    # Calcula espacios ocupados y disponibles automáticamente
+    espacios_ocupados = serializers.IntegerField(read_only=True)
     espacios_disponibles = serializers.SerializerMethodField()
 
     class Meta:
@@ -13,6 +13,7 @@ class EspacioParqueoConfigSerializer(serializers.ModelSerializer):
                   'espacios_ocupados', 'espacios_disponibles']
 
     def get_espacios_disponibles(self, obj):
+        # Calcula espacios disponibles en tiempo real
         return obj.total_espacios - obj.espacios_ocupados
 
 
@@ -23,8 +24,7 @@ class VehiculoSerializer(serializers.ModelSerializer):
 
 
 class RegistroParqueoSerializer(serializers.ModelSerializer):
-    # Relación anidada para mostrar detalles del vehículo
-    vehiculo = VehiculoSerializer()
+    vehiculo = VehiculoSerializer()  # Relación anidada para incluir datos del vehículo
     tiempo_estacionado = serializers.SerializerMethodField()
 
     class Meta:
@@ -33,31 +33,26 @@ class RegistroParqueoSerializer(serializers.ModelSerializer):
                   'tiempo_estacionado', 'total_cobro', 'estado']
 
     def create(self, validated_data):
-        # Extraer los datos del vehiculo del diccionario
+        # Extraer y gestionar los datos del vehículo
         vehiculo_data = validated_data.pop('vehiculo')
-        vehiculo_instance, _ = Vehiculo.objects.get_or_create(
-            **vehiculo_data)  # Buscar si existe el vehiculo o crearlo
-
-        # crear el registro con la instancia de vehiculo que ya existe
-        registro = RegistroParqueo.objects.create(
-            vehiculo=vehiculo_instance, **validated_data)
-        return registro
+        vehiculo_instance, _ = Vehiculo.objects.get_or_create(**vehiculo_data)
+        validated_data['vehiculo'] = vehiculo_instance
+        return RegistroParqueo.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        # Extraer los datos del vehiculo del diccionario
+        # Actualizar los datos del vehículo si están presentes
         vehiculo_data = validated_data.pop('vehiculo', None)
         if vehiculo_data:
             vehiculo_instance, _ = Vehiculo.objects.get_or_create(
-                **vehiculo_data)  # Buscar si existe el vehiculo o crearlo
+                **vehiculo_data)
             instance.vehiculo = vehiculo_instance
-
-        instance = super().update(instance, validated_data)
-        return instance
+        return super().update(instance, validated_data)
 
     def get_tiempo_estacionado(self, obj):
+        # Calcula el tiempo estacionado solo si hay entrada y salida
         if obj.fecha_entrada and obj.fecha_salida:
             tiempo = (obj.fecha_salida -
-                      obj.fecha_entrada).total_seconds() / 60  # En minutos
+                      obj.fecha_entrada).total_seconds() / 60
             return round(tiempo, 2)
         return None
 
