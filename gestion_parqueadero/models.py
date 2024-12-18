@@ -27,6 +27,10 @@ class EspacioParqueoConfig(models.Model):
         verbose_name="Espacios Ocupados"
     )
 
+    @property
+    def espacios_disponibles(self):
+        return self.total_espacios - self.espacios_ocupados
+
     def clean(self):
         if self.espacios_ocupados > self.total_espacios:
             raise ValidationError(
@@ -86,6 +90,39 @@ class Vehiculo(models.Model):
         verbose_name_plural = "Vehículos"
 
 
+# Modelo de tarifas
+class Tarifa(models.Model):
+    TIPO_VEHICULO_CHOICES = [
+        ('carro', 'Carro'),
+        ('moto', 'Moto'),
+        ('bici', 'Bicicleta'),
+        ('otros', 'Otros')
+    ]
+
+    tipo_vehiculo = models.CharField(
+        max_length=10, choices=TIPO_VEHICULO_CHOICES
+    )
+    costo_por_minuto = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        verbose_name="Costo por minuto"
+    )
+
+    def clean(self):
+        if self.costo_por_minuto <= 0:
+            raise ValidationError(
+                "El costo por minuto debe ser mayor a 0."
+            )
+
+    def __str__(self):
+        return f"{self.get_tipo_vehiculo_display()} - ${self.costo_por_minuto} por minuto."
+
+    class Meta:
+        verbose_name = "Tarifa"
+        verbose_name_plural = "Tarifas"
+
+
 # Registro de entradas y salidas
 class RegistroParqueo(models.Model):
     ESTADO_CHOICES = [
@@ -122,8 +159,8 @@ class RegistroParqueo(models.Model):
         verbose_name="Tiempo Estacionado (en minutos)"
     )
     total_cobro = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Total Cobrado")
-
+        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Total Cobrado"
+    )
     estado = models.CharField(
         max_length=20,
         choices=ESTADO_CHOICES,
@@ -136,6 +173,7 @@ class RegistroParqueo(models.Model):
             raise ValidationError("Este vehículo ya tiene un registro activo.")
 
     def save(self, *args, **kwargs):
+        # Calcular tiempo estacionado y total a cobrar
         if self.fecha_salida and self.fecha_entrada:
             delta = self.fecha_salida - self.fecha_entrada
             self.tiempo_estacionado = Decimal(
@@ -144,7 +182,34 @@ class RegistroParqueo(models.Model):
                 tipo_vehiculo=self.vehiculo.tipo).first()
             if tarifa:
                 self.total_cobro = self.tiempo_estacionado * tarifa.costo_por_minuto
+
+        # Actualizar espacios ocupados
+        if not self.pk and self.estado == "activo":  # Nuevo registro
+            espacio_config = EspacioParqueoConfig.objects.get(
+                tipo_espacio=self.vehiculo.tipo)
+            if espacio_config.espacios_ocupados >= espacio_config.total_espacios:
+                raise ValidationError(
+                    "No hay espacios disponibles para este tipo de vehículo.")
+            espacio_config.espacios_ocupados += 1
+            espacio_config.save()
+        elif self.pk and self.estado != "activo":  # Registro cambiado a no activo
+            espacio_config = EspacioParqueoConfig.objects.get(
+                tipo_espacio=self.vehiculo.tipo)
+            espacio_config.espacios_ocupados = max(
+                espacio_config.espacios_ocupados - 1, 0)
+            espacio_config.save()
+
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Reducir espacios ocupados al eliminar un registro activo
+        if self.estado == "activo":
+            espacio_config = EspacioParqueoConfig.objects.get(
+                tipo_espacio=self.vehiculo.tipo)
+            espacio_config.espacios_ocupados = max(
+                espacio_config.espacios_ocupados - 1, 0)
+            espacio_config.save()
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"Registro {self.vehiculo.placa} - Entrada: {self.fecha_entrada} - Salida: {self.fecha_salida}"
@@ -152,34 +217,3 @@ class RegistroParqueo(models.Model):
     class Meta:
         verbose_name = "Registro de Parqueo"
         verbose_name_plural = "Registros de Parqueo"
-
-
-class Tarifa(models.Model):
-    TIPO_VEHICULO_CHOICES = [
-        ('carro', 'Carro'),
-        ('moto', 'Moto'),
-        ('bici', 'Bicicleta'),
-        ('otros', 'Otros')
-    ]
-    tipo_vehiculo = models.CharField(
-        max_length=10, choices=TIPO_VEHICULO_CHOICES
-    )
-    costo_por_minuto = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        validators=[MinValueValidator(0.01)],
-        verbose_name="Costo por minuto"
-    )
-
-    def clean(self):
-        if self.costo_por_minuto <= 0:
-            raise ValidationError(
-                "El costo por minuto debe ser mayor a 0."
-            )
-
-    def __str__(self):
-        return f"{self.get_tipo_vehiculo_display()} - ${self.costo_por_minuto} por minuto."
-
-    class Meta:
-        verbose_name = "Tarifa"
-        verbose_name_plural = "Tarifas"
